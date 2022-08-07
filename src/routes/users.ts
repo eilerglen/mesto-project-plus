@@ -9,10 +9,10 @@ import {
 
 const router = Router();
 
-router.get('/users', getUsers);
-router.post('/users', createUser);
-router.get('/users/:userId', getUserById);
-router.patch('/users/me', updateUser);
-router.patch('/users/me/avatar', updateAvatar);
+router.get('/', getUsers);
+router.post('/', createUser);
+router.get('/:userId', getUserById);
+router.patch('/me', updateUser);
+router.patch('/me/avatar', updateAvatar);
 
 export default router;

@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 interface IUser {
   name: string,
@@ -22,11 +23,7 @@ const userShema = new mongoose.Schema<IUser>({
   avatar: {
     type: String,
     required: true,
-    validate: {
-      // eslint-disable-next-line no-useless-escape
-      validator: () => /https*:\/\/w*[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]{5,}\#*/,
-      message: 'Необходимо передать ссылку',
-    },
+    validate: validator.isURL,
   },
 });
 

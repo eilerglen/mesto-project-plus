@@ -12,7 +12,6 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
-app.use('/', userRouter);
 
 app.use((req: TempRequest, res: Response, next: NextFunction) => {
   req.user = {
@@ -21,6 +20,7 @@ app.use((req: TempRequest, res: Response, next: NextFunction) => {
   next();
 });
 
+app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 
 app.listen(PORT, () => {

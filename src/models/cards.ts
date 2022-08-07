@@ -1,4 +1,5 @@
 import mongoose from 'mongoose';
+import validator from 'validator';
 
 interface ICard {
   name: string,
@@ -18,10 +19,7 @@ const cardShema = new mongoose.Schema<ICard>({
   link: {
     type: String,
     required: true,
-    validate: {
-      // eslint-disable-next-line no-useless-escape
-      validator: () => /https*:\/\/w*[A-Za-z0-9\-\.\_\~\:\/\?\#\[\]\@\!\$\&\'\(\)\*\+\,\;\=]{5,}\#*/,
-    },
+    validate: validator.isURL,
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

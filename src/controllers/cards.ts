@@ -1,118 +1,104 @@
-import { Request, Response } from 'express';
-// eslint-disable-next-line import/no-unresolved
+/* eslint-disable consistent-return */
+import { NextFunction, Request, Response } from 'express';
+import ValidationRequestError from '../utils/errors/validation-error';
+import NotFoundError from '../utils/errors/not-found-error';
 import Card from '../models/cards';
 import TempRequest from '../utils/utils';
 
 // Создаем карточки
 
-// eslint-disable-next-line consistent-return
-export const createCard = async (req: TempRequest, res: Response) => {
-  const { name, link, owner } = req.body;
+export const createCard = async (req: TempRequest, res: Response, next: NextFunction) => {
+  const { name, link } = req.body;
+  const owner = req.user?._id;
   try {
     const card = await Card.create({ name, link, owner });
     return res.send({ data: card });
   } catch (err) {
     if (err instanceof Error) {
-      if (err.name === 'CastError') {
-        return res.status(400).send({ message: 'Переданы некорректные данные' });
+      if (err.name === 'ValidationError') {
+        next(new ValidationRequestError('Переданы некорректные данные'));
       }
-      return res.status(500).send({ message: 'Произошла ошибка' });
+      next(err);
     }
   }
 };
 
 // Создаем карточкe для юзера
-
-// eslint-disable-next-line consistent-return
-export const getCard = async (req: Request, res: Response) => {
-  try {
-    const card = await Card.find({}).populate('owner');
-    return res.send({ data: card });
-  } catch (err) {
-    return res.status(500).send({ message: 'Произошла ошибка' });
-  }
-};
-
-// Получаем карточки
-
-// eslint-disable-next-line consistent-return
-export const getCards = async (req: Request, res: Response) => {
+export const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cards = await Card.find({});
     return res.send({ data: cards });
   } catch (err) {
-    return res.status(500).send({ message: 'Произошла ошибка' });
+    next(err);
   }
 };
 
 // Удаляем карточки
 
-// eslint-disable-next-line consistent-return
-export const deleteCard = async (req: TempRequest, res: Response) => {
+export const deleteCard = async (req: TempRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
   try {
-    // eslint-disable-next-line no-shadow
-    const deleteCard = await Card.findByIdAndRemove(cardId);
+    const cardRemove = await Card.findByIdAndRemove(cardId);
+    if (!cardRemove) {
+      next(new NotFoundError('Карточка по указанному id не найдена'));
+    }
     return res.send({ data: deleteCard });
   } catch (err) {
-    if (err instanceof Error) {
-      if (err.name === 'CastError') {
-        return res.status(404).send({ message: 'Карточка не найдена' });
-      }
-      return res.status(500).send({ message: 'Произошла ошибка' });
-    }
+    next(err);
   }
 };
 
 // Лайкаем карточки
 
-// eslint-disable-next-line consistent-return
-export const likeCard = async (req: TempRequest, res: Response) => {
+export const likeCard = async (req: TempRequest, res: Response, next: NextFunction) => {
   const id = req.user?._id;
   try {
-    const card = await Card.findByIdAndUpdate(
+    const cardLike = await Card.findByIdAndUpdate(
       req.params.cardId,
       { $addToSet: { likes: id } }, // добавить _id в массив, если его там нет
-      { new: true },
+      { new: true, runValidators: true },
     );
-    return res.send({ data: card });
+    if (!cardLike) {
+      next(new NotFoundError('Карточка по указанному id не найдена'));
+    }
+    return res.send({ data: cardLike });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
         case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные' });
-        // eslint-disable-next-line no-fallthrough
+          next(new ValidationRequestError('Переданы некорректные данные'));
+          break;
         case 'CastError':
-          res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        // eslint-disable-next-line no-fallthrough
-        default: res.status(500).send({ message: 'Произошла ошибка' });
+          next(new NotFoundError('Карточка по указанному id не найдена'));
+          break;
+        default: next(err);
       }
     }
   }
 };
 
-export const dislikeCard = async (req: TempRequest, res: Response) => {
+export const dislikeCard = async (req: TempRequest, res: Response, next: NextFunction) => {
   const id = req.params.cardId;
-  let card;
-
   try {
-    card = await Card.findByIdAndUpdate(
+    const cardDislike = await Card.findByIdAndUpdate(
       id,
       { $pull: { likes: req.user?._id } },
-      { new: true },
+      { new: true, runValidators: true },
     );
-
-    res.send(card);
+    if (!cardDislike) {
+      next(new NotFoundError('Карточка по указанному id не найдена'));
+    }
+    return res.send(cardDislike);
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
         case 'ValidationError':
-          res.status(400).send({ message: 'Переданы некорректные данные' });
-        // eslint-disable-next-line no-fallthrough
+          next(new ValidationRequestError('Переданы некорректные данные'));
+          break;
         case 'CastError':
-          res.status(404).send({ message: 'Запрашиваемая карточка не найдена' });
-        // eslint-disable-next-line no-fallthrough
-        default: res.status(500).send({ message: 'Произошла ошибка' });
+          next(new NotFoundError('Карточка по указанному id не найдена'));
+          break;
+        default: next(err);
       }
     }
   }
