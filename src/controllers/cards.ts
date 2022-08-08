@@ -16,6 +16,7 @@ export const createCard = async (req: TempRequest, res: Response, next: NextFunc
     if (err instanceof Error) {
       if (err.name === 'ValidationError') {
         next(new ValidationRequestError('Переданы некорректные данные'));
+        return;
       }
       next(err);
     }
@@ -44,7 +45,13 @@ export const deleteCard = async (req: TempRequest, res: Response, next: NextFunc
     }
     res.send({ data: deleteCard });
   } catch (err) {
-    next(err);
+    if (err instanceof Error) {
+      if (err.name === 'CastError') {
+        next(new NotFoundError('Карточка по указанному id не найдена'));
+        return;
+      }
+      next(err);
+    }
   }
 };
 
@@ -78,6 +85,8 @@ export const likeCard = async (req: TempRequest, res: Response, next: NextFuncti
   }
 };
 
+// Дизлайкаем карточки
+
 export const dislikeCard = async (req: TempRequest, res: Response, next: NextFunction) => {
   const id = req.params.cardId;
   try {
@@ -105,4 +114,3 @@ export const dislikeCard = async (req: TempRequest, res: Response, next: NextFun
     }
   }
 };
-// Дизлайкаем карточки

@@ -31,6 +31,7 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     if (err instanceof Error) {
       if (err.name === 'CastError') {
         next(new NotFoundError('Пользователь не найден'));
+        return;
       }
       next(err);
     }
@@ -48,6 +49,7 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
     if (err instanceof Error) {
       if (err.name === 'ValidationError') {
         next(new ValidationRequestError('Переданы некорректные данные'));
+        return;
       }
       next(err);
     }
