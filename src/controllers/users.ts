@@ -56,7 +56,6 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
 
 // Обновляем данные юзера
 
-// eslint-disable-next-line consistent-return
 export const updateUser = async (req: TempRequest, res: Response, next: NextFunction) => {
   const id = req.user?._id;
   const { name, about } = req.body;
@@ -84,7 +83,6 @@ export const updateUser = async (req: TempRequest, res: Response, next: NextFunc
 
 // Обновляем аватар
 
-// eslint-disable-next-line consistent-return
 export const updateAvatar = async (req: TempRequest, res: Response, next: NextFunction) => {
   const id = req.user?._id;
   const { avatar } = req.body;

@@ -1,4 +1,3 @@
-/* eslint-disable consistent-return */
 import { NextFunction, Request, Response } from 'express';
 import ValidationRequestError from '../utils/errors/validation-error';
 import NotFoundError from '../utils/errors/not-found-error';
@@ -12,7 +11,7 @@ export const createCard = async (req: TempRequest, res: Response, next: NextFunc
   const owner = req.user?._id;
   try {
     const card = await Card.create({ name, link, owner });
-    return res.send({ data: card });
+    res.send({ data: card });
   } catch (err) {
     if (err instanceof Error) {
       if (err.name === 'ValidationError') {
@@ -27,7 +26,7 @@ export const createCard = async (req: TempRequest, res: Response, next: NextFunc
 export const getCards = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const cards = await Card.find({});
-    return res.send({ data: cards });
+    res.send({ data: cards });
   } catch (err) {
     next(err);
   }
@@ -43,7 +42,7 @@ export const deleteCard = async (req: TempRequest, res: Response, next: NextFunc
       next(new NotFoundError('Карточка по указанному id не найдена'));
       return;
     }
-    return res.send({ data: deleteCard });
+    res.send({ data: deleteCard });
   } catch (err) {
     next(err);
   }
@@ -63,7 +62,7 @@ export const likeCard = async (req: TempRequest, res: Response, next: NextFuncti
       next(new NotFoundError('Карточка по указанному id не найдена'));
       return;
     }
-    return res.send({ data: cardLike });
+    res.send({ data: cardLike });
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
@@ -91,7 +90,7 @@ export const dislikeCard = async (req: TempRequest, res: Response, next: NextFun
       next(new NotFoundError('Карточка по указанному id не найдена'));
       return;
     }
-    return res.send(cardDislike);
+    res.send(cardDislike);
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
