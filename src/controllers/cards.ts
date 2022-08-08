@@ -41,6 +41,7 @@ export const deleteCard = async (req: TempRequest, res: Response, next: NextFunc
     const cardRemove = await Card.findByIdAndRemove(cardId);
     if (!cardRemove) {
       next(new NotFoundError('Карточка по указанному id не найдена'));
+      return;
     }
     return res.send({ data: deleteCard });
   } catch (err) {
@@ -60,6 +61,7 @@ export const likeCard = async (req: TempRequest, res: Response, next: NextFuncti
     );
     if (!cardLike) {
       next(new NotFoundError('Карточка по указанному id не найдена'));
+      return;
     }
     return res.send({ data: cardLike });
   } catch (err) {
@@ -87,6 +89,7 @@ export const dislikeCard = async (req: TempRequest, res: Response, next: NextFun
     );
     if (!cardDislike) {
       next(new NotFoundError('Карточка по указанному id не найдена'));
+      return;
     }
     return res.send(cardDislike);
   } catch (err) {

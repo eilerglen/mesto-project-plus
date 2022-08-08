@@ -1,5 +1,4 @@
 /* eslint-disable max-len */
-/* eslint-disable consistent-return */
 import { Request, Response, NextFunction } from 'express';
 import ValidationRequestError from '../utils/errors/validation-error';
 import NotFoundError from '../utils/errors/not-found-error';
@@ -11,7 +10,7 @@ import TempRequest from '../utils/utils';
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
   try {
     const users = await User.find({});
-    return res.send({ data: users });
+    res.send({ data: users });
   } catch (err) {
     next(err);
   }
@@ -25,6 +24,7 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
     const user = await User.findById(id);
     if (!user) {
       next(new NotFoundError('Пользователь не найден'));
+      return;
     }
     res.send({ data: user });
   } catch (err) {
@@ -64,8 +64,9 @@ export const updateUser = async (req: TempRequest, res: Response, next: NextFunc
     const userUpdate = await User.findByIdAndUpdate(id, { name, about }, { new: true, runValidators: true });
     if (!userUpdate) {
       next(new NotFoundError('Пользователь не найден'));
+      return;
     }
-    return res.send(userUpdate);
+    res.send(userUpdate);
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
@@ -91,8 +92,9 @@ export const updateAvatar = async (req: TempRequest, res: Response, next: NextFu
     const userUpdateAvatar = await User.findByIdAndUpdate(id, { avatar }, { new: true, runValidators: true });
     if (!userUpdateAvatar) {
       next(new NotFoundError('Пользователь не найден'));
+      return;
     }
-    return res.send(userUpdateAvatar);
+    res.send(userUpdateAvatar);
   } catch (err) {
     if (err instanceof Error) {
       switch (err.name) {
