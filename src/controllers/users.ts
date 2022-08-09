@@ -1,9 +1,12 @@
 /* eslint-disable max-len */
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
+import bcrypt from 'bcryptjs';
 import ValidationRequestError from '../utils/errors/validation-error';
 import NotFoundError from '../utils/errors/not-found-error';
 import User from '../models/users';
 import TempRequest from '../utils/utils';
+
 
 // Получаем всех юзеров
 
@@ -109,3 +112,16 @@ export const updateAvatar = async (req: TempRequest, res: Response, next: NextFu
     }
   }
 };
+
+export const login = async (req: Request, res: Response, next: NextFunction) => {
+  const {email, password} = req.body;
+  const { JWT_SECRET } = process.env;
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      next(new NotFoundError('Пользователь не найден'));
+      return;
+    }
+    res.send(jwt.sign({_id: user._id },`${JWT_SECRET}` , {expiresIn: '7d'}))
+  } catch(next)
+}
