@@ -7,7 +7,6 @@ import NotFoundError from '../utils/errors/not-found-error';
 import User from '../models/users';
 import TempRequest from '../utils/utils';
 
-
 // Получаем всех юзеров
 
 export const getUsers = async (req: Request, res: Response, next: NextFunction) => {
@@ -44,17 +43,26 @@ export const getUserById = async (req: Request, res: Response, next: NextFunctio
 // Создаем юзера
 
 export const createUser = async (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
+  const {
+    name, about, avatar, email, password,
+  } = req.body;
+  const hash = await bcrypt.hash(password, 10);
   try {
-    const user = await User.create({ name, about, avatar });
+    const user = await User.create({
+      name, about, avatar, email, password: hash,
+    });
     res.send({ data: user });
   } catch (err) {
     if (err instanceof Error) {
-      if (err.name === 'ValidationError') {
-        next(new ValidationRequestError('Переданы некорректные данные'));
-        return;
+      switch (err.name) {
+        case 'ValidationError':
+          next(new ValidationRequestError('Переданы некорректные данные'));
+          break;
+        case 'CastError':
+          next(new NotFoundError('Пользователь не найден'));
+          break;
+        default: next(err);
       }
-      next(err);
     }
   }
 };
@@ -113,15 +121,16 @@ export const updateAvatar = async (req: TempRequest, res: Response, next: NextFu
   }
 };
 
+// Логируемся
+
+// eslint-disable-next-line consistent-return
 export const login = async (req: Request, res: Response, next: NextFunction) => {
-  const {email, password} = req.body;
-  const { JWT_SECRET } = process.env;
+  const { email, password } = req.body;
   try {
-    const user = await User.findOne({ email });
-    if (!user) {
-      next(new NotFoundError('Пользователь не найден'));
-      return;
-    }
-    res.send(jwt.sign({_id: user._id },`${JWT_SECRET}` , {expiresIn: '7d'}))
-  } catch(next)
-}
+    const user = await User.findUserByCredentials(email, password);
+    const token = jwt.sign({ _id: user._id }, 'secret-key', { expiresIn: '7d' });
+    return res.cookie('token', token, { httpOnly: true }).end();
+  } catch (err) {
+    next(err);
+  }
+};
