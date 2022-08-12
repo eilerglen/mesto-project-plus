@@ -7,21 +7,21 @@ interface SessionRequest extends Request {
 }
 export default (req: SessionRequest, res: Response, next: NextFunction) => {
   const { authorization } = req.headers;
-  if (!authorization) {
-    return next(new AuthError('Требуется авторизация'))
+  if (!authorization || !authorization.startsWith('Bearer')) {
+    return next(new AuthError('Требуется авторизация'));
   }
 
   const token = authorization.replace('Bearer', '');
-  const { JWT_SECRET } = process.env;
 
   let payload;
 
   try {
-    payload = jwt.verify(token, `${JWT_SECRET}`);
+    payload = jwt.verify(token, 'some-secret-key');
   } catch (err) {
     return next(new AuthError('Требуется авторизация'));
   }
 
   req.user = payload;
 
-}
+  next();
+};
