@@ -1,4 +1,7 @@
 import { Router } from 'express';
+import { celebrate } from 'celebrate';
+import { createCardJoiObj, findCardJoiObj } from '../utils/utils';
+
 import {
   getCards,
   createCard,
@@ -10,9 +13,9 @@ import {
 const router = Router();
 
 router.get('/', getCards);
-router.post('/', createCard);
-router.delete('/:cardId', deleteCard);
-router.put('/:cardId/likes', likeCard);
-router.delete('/:cardId/likes', dislikeCard);
+router.post('/', celebrate({ body: createCardJoiObj }), createCard);
+router.delete('/:cardId', celebrate({ params: findCardJoiObj }), deleteCard);
+router.put('/:cardId/likes', celebrate({ params: findCardJoiObj }), likeCard);
+router.delete('/:cardId/likes', celebrate({ params: findCardJoiObj }), dislikeCard);
 
 export default router;

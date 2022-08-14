@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import ForbiddenError from '../utils/errors/forbidden-error';
 import ValidationRequestError from '../utils/errors/validation-error';
 import NotFoundError from '../utils/errors/not-found-error';
 import Card from '../models/cards';
@@ -37,13 +38,18 @@ export const getCards = async (req: Request, res: Response, next: NextFunction) 
 
 export const deleteCard = async (req: TempRequest, res: Response, next: NextFunction) => {
   const { cardId } = req.params;
+  const id = req.user?._id;
   try {
-    const cardRemove = await Card.findByIdAndRemove(cardId);
+    const cardRemove = await Card.findById(cardId);
     if (!cardRemove) {
       next(new NotFoundError('Карточка по указанному id не найдена'));
       return;
     }
-    res.send({ data: deleteCard });
+    if (id !== cardRemove.owner) {
+      throw new ForbiddenError('Нет доступа к указанным файлам')
+    }
+    await Card.deleteOne({ _id: cardId });
+    res.send({ data: cardRemove });
   } catch (err) {
     if (err instanceof Error) {
       if (err.name === 'CastError') {

@@ -3,6 +3,7 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 import bcrypt from 'bcryptjs';
 import ValidationRequestError from '../utils/errors/validation-error';
+import RegisterError from '../utils/errors/register-error';
 import NotFoundError from '../utils/errors/not-found-error';
 import User from '../models/users';
 import TempRequest from '../utils/utils';
@@ -22,6 +23,26 @@ export const getUsers = async (req: Request, res: Response, next: NextFunction) 
 
 export const getUserById = async (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.userId;
+  try {
+    const user = await User.findById(id);
+    if (!user) {
+      next(new NotFoundError('Пользователь не найден'));
+      return;
+    }
+    res.send({ data: user });
+  } catch (err) {
+    if (err instanceof Error) {
+      if (err.name === 'CastError') {
+        next(new NotFoundError('Пользователь не найден'));
+        return;
+      }
+      next(err);
+    }
+  }
+};
+
+export const getUserInfo = async (req: TempRequest, res: Response, next: NextFunction) => {
+  const id = req.user?._id;
   try {
     const user = await User.findById(id);
     if (!user) {
@@ -60,6 +81,9 @@ export const createUser = async (req: Request, res: Response, next: NextFunction
           break;
         case 'CastError':
           next(new NotFoundError('Пользователь не найден'));
+          break;
+        case 'MongoServerError':
+          next(new RegisterError('Пользователь с указанной почтой уже существует'));
           break;
         default: next(err);
       }

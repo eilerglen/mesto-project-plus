@@ -1,5 +1,7 @@
+import * as dotenv from 'dotenv';
 import express, { NextFunction, Response, Request } from 'express';
 import mongoose from 'mongoose';
+import { errors } from 'celebrate';
 import userRouter from './routes/users';
 import cardRouter from './routes/cards';
 import auth from './middlewares/auth';
@@ -7,6 +9,7 @@ import { login, createUser } from './controllers/users';
 import { DEFAULT_ERROR } from './utils/errors/constants';
 import { requestLogger, errorLogger } from './middlewares/logger';
 
+dotenv.config();
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
 
@@ -25,6 +28,7 @@ app.use('/users', userRouter);
 app.use('/cards', cardRouter);
 
 app.use(errorLogger);
+app.use(errors());
 
 app.use((
   err: any,
