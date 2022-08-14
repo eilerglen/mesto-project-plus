@@ -46,7 +46,7 @@ export const deleteCard = async (req: TempRequest, res: Response, next: NextFunc
       return;
     }
     if (id !== cardRemove.owner) {
-      throw new ForbiddenError('Нет доступа к указанным файлам')
+      throw new ForbiddenError('Нет доступа к указанным файлам');
     }
     await Card.deleteOne({ _id: cardId });
     res.send({ data: cardRemove });

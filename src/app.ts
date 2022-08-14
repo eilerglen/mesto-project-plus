@@ -1,13 +1,14 @@
 import * as dotenv from 'dotenv';
 import express, { NextFunction, Response, Request } from 'express';
 import mongoose from 'mongoose';
-import { errors } from 'celebrate';
+import { celebrate, errors } from 'celebrate';
 import userRouter from './routes/users';
 import cardRouter from './routes/cards';
 import auth from './middlewares/auth';
 import { login, createUser } from './controllers/users';
 import { DEFAULT_ERROR } from './utils/errors/constants';
 import { requestLogger, errorLogger } from './middlewares/logger';
+import { signupJoiObj, signinJoiObj } from './utils/utils';
 
 dotenv.config();
 // Слушаем 3000 порт
@@ -19,8 +20,8 @@ app.use(express.urlencoded({ extended: true }));
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 app.use(requestLogger);
-app.use('/signin', login);
-app.use('signup', createUser);
+app.post('/signup', celebrate({ body: signupJoiObj }), createUser);
+app.post('/signin', celebrate({ body: signinJoiObj }), login);
 
 app.use(auth);
 
