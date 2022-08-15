@@ -1,5 +1,5 @@
 import mongoose from 'mongoose';
-import validator from 'validator';
+import { linkRegex } from '../utils/utils';
 
 interface ICard {
   name: string,
@@ -19,7 +19,10 @@ const cardShema = new mongoose.Schema<ICard>({
   link: {
     type: String,
     required: true,
-    validate: validator.isURL,
+    validate: {
+      validator: (v:string) => linkRegex.test(v),
+      message: 'Необходимо передать ссылку',
+    },
   },
   owner: {
     type: mongoose.Schema.Types.ObjectId,

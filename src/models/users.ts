@@ -1,8 +1,8 @@
 import mongoose from 'mongoose';
-import validator from 'validator';
 import isEmail from 'validator/lib/isEmail';
 import bcrypt from 'bcryptjs';
 import AuthError from '../utils/errors/auth-error';
+import { linkRegex } from '../utils/utils';
 
 interface IUser {
   name: string,
@@ -33,7 +33,10 @@ const userSchema = new mongoose.Schema<IUser>({
   avatar: {
     type: String,
     required: true,
-    validate: validator.isURL,
+    validate: {
+      validator: (v:string) => linkRegex.test(v),
+      message: 'Необходимо передать ссылку',
+    },
     default: 'https://pictures.s3.yandex.net/resources/jacques-cousteau_1604399756.png',
   },
   email: {

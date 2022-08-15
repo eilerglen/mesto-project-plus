@@ -10,6 +10,11 @@ import { DEFAULT_ERROR } from './utils/errors/constants';
 import { requestLogger, errorLogger } from './middlewares/logger';
 import { signupJoiObj, signinJoiObj } from './utils/utils';
 
+interface Error {
+  statusCode: number,
+  message: string,
+}
+
 dotenv.config();
 // Слушаем 3000 порт
 const { PORT = 3000 } = process.env;
@@ -32,7 +37,7 @@ app.use(errorLogger);
 app.use(errors());
 
 app.use((
-  err: any,
+  err: Error,
   req: Request,
   res: Response,
   // eslint-disable-next-line no-unused-vars
